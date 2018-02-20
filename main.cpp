@@ -1,5 +1,6 @@
 #include <irrlicht.h>
 #include <vector>
+#include <algorithm>
 #include <iostream>
 
 using namespace irr;
@@ -10,20 +11,29 @@ public:
 	// record info on the mouse state
 	struct SMouseState {
 		core::position2di pos;
-		bool LeftButtonDown;
-		SMouseState(): LeftButtonDown(false) {}
+		bool leftButtonDown;
+		bool rightButtonDown;
+		SMouseState(): leftButtonDown(false), rightButtonDown(false) {}
 	} mouseState;
 
 	// track mouse movements and clicks
 	virtual bool OnEvent(const SEvent& event) {
-		if (event.EventType == irr::EET_MOUSE_INPUT_EVENT) {
+		if (event.EventType == EET_MOUSE_INPUT_EVENT) {
 			switch(event.MouseInput.Event) {
 			case EMIE_LMOUSE_PRESSED_DOWN:
-				mouseState.LeftButtonDown = true;
+				mouseState.leftButtonDown = true;
 				break;
 
 			case EMIE_LMOUSE_LEFT_UP:
-				mouseState.LeftButtonDown = false;
+				mouseState.leftButtonDown = false;
+				break;
+
+			case EMIE_RMOUSE_PRESSED_DOWN:
+				mouseState.rightButtonDown = true;
+				break;
+
+			case EMIE_RMOUSE_LEFT_UP:
+				mouseState.rightButtonDown = false;
 				break;
 
 			case EMIE_MOUSE_MOVED:
@@ -41,7 +51,7 @@ public:
 	MyEventReceiver() {}
 };
 
-scene::ISceneNode* createCube(video::IVideoDriver* driver, scene::ISceneManager* smgr, scene::IMesh* cube, core::vector3df pos, video::SColor color) {
+scene::ISceneNode* createCube(video::IVideoDriver* driver, scene::ISceneManager* smgr, scene::IMesh* cube, core::vector3df pos, video::SColor color, int id=-1) {
 	scene::ISceneNode* node = smgr->addMeshSceneNode(cube);
 	if (node) {
 		// add a texture to the cube and disable lighting as there is no light
@@ -52,6 +62,7 @@ scene::ISceneNode* createCube(video::IVideoDriver* driver, scene::ISceneManager*
 		// correct Blender rotation for Irrlicht (not really necessary for a cube, just for reference)
 		node->setRotation(core::vector3df(0,0,180));
 		node->setPosition(pos);
+		node->setID(id);
 	}
 	return node;
 }
@@ -83,8 +94,8 @@ int main() {
 	}
 
 	// add cubes to the scene to form the gameboard
-	int gameBoardSize = 8;
-	int gameBoardTopLeftOffset = -(3*gameBoardSize)/2;
+	const int gameBoardSize = 8;
+	const int gameBoardTopLeftOffset = -(3*gameBoardSize)/2;
 	video::SColor cubeColor = video::SColor(0,16,156,255);
 	video::SColor raycubeColor = video::SColor(0,156,5,255);
 
@@ -98,7 +109,7 @@ int main() {
 		for (int x = 0; x < gameBoardSize; ++x) {
 
 			core::vector3df cubePosition = core::vector3df(gameBoardTopLeftOffset + 3*x, 0, gameBoardTopLeftOffset + 3*y);
-			cubes[y].push_back(createCube(driver, smgr, cube, cubePosition, cubeColor));
+			cubes[y].push_back(createCube(driver, smgr, cube, cubePosition, cubeColor, y*gameBoardSize+x));
 
 			if (x == 0) {
 				core::vector3df raycubePosition = cubes[y][x]->getPosition() + core::vector3df(-5,0,0);
@@ -118,6 +129,7 @@ int main() {
 			}
 		}
 	}
+	std::vector<std::vector<scene::ISceneNode*>> raycubes = {leftRaycubes, rightRaycubes, topRaycubes, bottomRaycubes};
 
 	// add a static camera that views the gameboard
 	smgr->addCameraSceneNode(0, core::vector3df(0,-30,0), core::vector3df(0,0,0));
@@ -127,21 +139,54 @@ int main() {
 	scene::ISceneCollisionManager* collmgr = smgr->getSceneCollisionManager();
 
 	// draw the scene
+	const int maxAtoms = 5;
+	int atomsSet = 0;
 	while(device->run() && driver) {
 		if (device->isWindowActive()) {
 			driver->beginScene(true, true, video::SColor(255,150,150,255));
 
 			// check for a mouse click
 			core::position2d<s32> position;
-			if (receiver.mouseState.LeftButtonDown) {
+			if (receiver.mouseState.leftButtonDown || receiver.mouseState.rightButtonDown) {
 				position = receiver.mouseState.pos;
-			}
-			// check collision
-			scene::ISceneNode * selectedSceneNode = collmgr->getSceneNodeFromScreenCoordinatesBB(position);
 
-			// if there is a node below the position color the node
-			if (selectedSceneNode) {
-				selectedSceneNode->getMaterial(0).AmbientColor.set(255,255,0,255);
+				// check collision
+				scene::ISceneNode * selectedSceneNode = collmgr->getSceneNodeFromScreenCoordinatesBB(position);
+
+				// if there is a node below the position color the node
+				if (selectedSceneNode) {
+					// if a raycube is clicked, check at which position it is in the array
+					int raycubeHit = -1;
+					std::vector<scene::ISceneNode*>::iterator it;
+					int index;
+					for (int i = 0; i < raycubes.size(); ++i) {
+						it = std::find(raycubes[i].begin(), raycubes[i].end(), selectedSceneNode);
+						if (it != raycubes[i].end()) {
+							raycubeHit = i;
+							index = distance(raycubes[i].begin(), it);
+							break;
+						}
+					}
+
+					// react on mouse clicks depending on the cube type hit
+					if (raycubeHit > -1) {
+						if (receiver.mouseState.leftButtonDown) {
+							selectedSceneNode->getMaterial(0).AmbientColor.set(0,255,0,255);
+						}
+					} else {
+						if (selectedSceneNode->getID() > -1) {
+							if (selectedSceneNode->getMaterial(0).AmbientColor != video::SColor(255,255,0,255) && receiver.mouseState.leftButtonDown && atomsSet < maxAtoms) {
+								selectedSceneNode->getMaterial(0).AmbientColor.set(255,255,0,255);
+								++atomsSet;
+							} else if (selectedSceneNode->getMaterial(0).AmbientColor != cubeColor && receiver.mouseState.rightButtonDown) {
+								selectedSceneNode->getMaterial(0).AmbientColor = cubeColor;
+								--atomsSet;
+							}
+						}
+					}
+					//std::cout << "cube id: " << selectedSceneNode->getID() << std::endl;
+					std::cout << "atoms set: " << atomsSet << std::endl;
+				}
 			}
 
 			smgr->drawAll();
