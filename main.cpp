@@ -242,7 +242,7 @@ int main() {
 								x = index;
 							}
 
-							// if atom left or right of straight path: if step==0: lighten current
+							// if atom left or right of straight path: if step==0: lighten current (reflect)
 							if ((horizontal && y < gameBoardSize-1 &&
 							  std::find(atoms.begin(), atoms.end(), cubes[x][y+1]->getID()) != atoms.end()) ||
 							  (horizontal && y > 0
@@ -257,7 +257,7 @@ int main() {
 								while (true) {
 									// if raycube reached: color raycube
 									if (x >= gameBoardSize || x < 0 || y >= gameBoardSize || y < 0) {
-										std::cout << "border reached at x: " << x << " y: " << y << std::endl;
+										std::cout << "border reached at x: " << x << " y: " << y << " index: " << index << " raycubeHit: " << raycubeHit << std::endl;
 										std::cout << raycolors.back().getBlue() << std::endl;
 										raycubes[raycubeHit][index]->getMaterial(0).AmbientColor = raycolors.back();
 										if (x < 0) {
@@ -275,7 +275,7 @@ int main() {
 										raycolors.pop_back();
 										break;
 									}
-									// if atom in straight path: darken opposite raycube, color current
+									// if atom in straight path: (darken opposite raycube,) color current (hit)
 									if (std::find(atoms.begin(), atoms.end(), cubes[x][y]->getID()) != atoms.end()) {
 										std::cout << "atom hit" << std::endl;
 										raycubes[raycubeHit][index]->getMaterial(0).AmbientColor = raycolors.back();
@@ -294,12 +294,12 @@ int main() {
 										raycolors.pop_back();
 										break;
 									}
-									// if atom left or right of straight path: if step!=0: change path away from atom
+									// if atom left or right of straight path: if step!=0: change path away from atom (deflect)
 									if (horizontal && y < gameBoardSize-1
 									&& std::find(atoms.begin(), atoms.end(), cubes[x][y+1]->getID()) != atoms.end()) {
 										if (horizontal && y > 0
 										&& std::find(atoms.begin(), atoms.end(), cubes[x][y-1]->getID()) != atoms.end()) {
-											std::cout << "double reflection on horizontal path" << std::endl;
+											std::cout << "double deflection on horizontal path" << std::endl;
 											x -= incrementor;
 											incrementor *= -1;
 											continue;
@@ -312,12 +312,12 @@ int main() {
 									&& std::find(atoms.begin(), atoms.end(), cubes[x][y-1]->getID()) != atoms.end()) {
 										if (horizontal && y < gameBoardSize-1
 										&& std::find(atoms.begin(), atoms.end(), cubes[x][y+1]->getID()) != atoms.end()) {
-											std::cout << "double reflection on horizontal path" << std::endl;
+											std::cout << "double deflection on horizontal path" << std::endl;
 											x -= incrementor;
 											incrementor *= -1;
 											continue;
 										}
-										std::cout << "reflected on horizontal path" << std::endl;
+										std::cout << "deflected on horizontal path" << std::endl;
 										horizontal = !horizontal;
 										x -= incrementor;
 										incrementor = 1;
@@ -326,7 +326,7 @@ int main() {
 									&& std::find(atoms.begin(), atoms.end(), cubes[x+1][y]->getID()) != atoms.end()) {
 										if (!horizontal && x > 0
 										&& std::find(atoms.begin(), atoms.end(), cubes[x-1][y]->getID()) != atoms.end()) {
-											std::cout << "double reflection on vertical path" << std::endl;
+											std::cout << "double deflection on vertical path" << std::endl;
 											y -= incrementor;
 											incrementor *= -1;
 											continue;
@@ -339,12 +339,12 @@ int main() {
 									&& std::find(atoms.begin(), atoms.end(), cubes[x-1][y]->getID()) != atoms.end()) {
 										if (!horizontal && x < gameBoardSize-1
 										&& std::find(atoms.begin(), atoms.end(), cubes[x+1][y]->getID()) != atoms.end()) {
-											std::cout << "double reflection on vertical path" << std::endl;
+											std::cout << "double deflection on vertical path" << std::endl;
 											y -= incrementor;
 											incrementor *= -1;
 											continue;
 										}
-										std::cout << "reflected on vertical path" << std::endl;
+										std::cout << "deflected on vertical path" << std::endl;
 										horizontal = !horizontal;
 										y -= incrementor;
 										incrementor = 1;
