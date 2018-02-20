@@ -101,8 +101,8 @@ int main() {
 	// add cubes to the scene to form the gameboard
 	const int gameBoardSize = 8;
 	const int gameBoardTopLeftOffset = -(3*gameBoardSize)/2;
-	video::SColor cubeColor = video::SColor(0,16,156,255);
-	video::SColor raycubeColor = video::SColor(0,156,5,255);
+	video::SColor cubeColor = video::SColor(0,0,128,255);//0,16,156,255);
+	video::SColor raycubeColor = video::SColor(0,128,0,255);//0,156,5,255);
 
 	std::vector<std::vector<scene::ISceneNode*>> cubes;
 	std::vector<scene::ISceneNode*> leftRaycubes;
