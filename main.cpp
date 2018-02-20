@@ -303,22 +303,10 @@ int main() {
 										raycolors.pop_back();
 										break;
 									}
-									// if atom in straight path: (darken opposite raycube,) color current (hit)
+									// if atom in straight path: color current (hit)
 									if (std::find(atoms.begin(), atoms.end(), cubes[x][y]->getID()) != atoms.end()) {
 										std::cout << "atom hit" << std::endl;
 										raycubes[raycubeHit][index]->getMaterial(0).AmbientColor = raycolors.back();
-										/*if (horizontal && incrementor < 0) {
-											raycubes[0][y]->getMaterial(0).AmbientColor = shadowedCube;
-										}
-										if (horizontal && incrementor > 0) {
-											raycubes[1][y]->getMaterial(0).AmbientColor = shadowedCube;
-										}
-										if (!horizontal && incrementor < 0) {
-											raycubes[2][x]->getMaterial(0).AmbientColor = shadowedCube;
-										}
-										if (!horizontal && incrementor > 0) {
-											raycubes[3][x]->getMaterial(0).AmbientColor = shadowedCube;
-										}*/ // this might be wrong
 										raycolors.pop_back();
 										break;
 									}
