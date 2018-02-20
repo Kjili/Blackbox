@@ -53,8 +53,8 @@ public:
 	MyEventReceiver() {}
 };
 
-scene::ISceneNode* createCube(video::IVideoDriver* driver, scene::ISceneManager* smgr, scene::IMesh* cube, core::vector3df pos, video::SColor color, int id=-1) {
-	scene::ISceneNode* node = smgr->addMeshSceneNode(cube);
+scene::ISceneNode* createNode(video::IVideoDriver* driver, scene::ISceneManager* smgr, scene::IMesh* mesh, core::vector3df pos, video::SColor color, int id=-1) {
+	scene::ISceneNode* node = smgr->addMeshSceneNode(mesh);
 	if (node) {
 		// add a texture to the cube and disable lighting as there is no light
 		node->setMaterialFlag(video::EMF_LIGHTING, true);
@@ -135,39 +135,51 @@ int main() {
 		return 1;
 	}
 
+	// load the atom
+	scene::IMesh* atom = smgr->getMesh("../models/atom.obj");
+	if (!atom) {
+		device->drop();
+		return 1;
+	}
+
 	// add cubes to the scene to form the gameboard
 	const int gameBoardSize = 8;
 	const int gameBoardTopLeftOffset = -(3*gameBoardSize)/2;
 	video::SColor cubeColor = video::SColor(0,0,128,255);//0,16,156,255);
 	video::SColor raycubeColor = video::SColor(0,0,0,255);//video::SColor(0,128,0,255);//0,156,5,255);
+	video::SColor atomColor = video::SColor(255,255,0,255);
 
 	std::vector<std::vector<scene::ISceneNode*>> cubes;
+	std::vector<std::vector<scene::ISceneNode*>> atoms;
 	std::vector<scene::ISceneNode*> leftRaycubes;
 	std::vector<scene::ISceneNode*> rightRaycubes;
 	std::vector<scene::ISceneNode*> topRaycubes;
 	std::vector<scene::ISceneNode*> bottomRaycubes;
 	for (int y = 0; y < gameBoardSize; ++y) {
 		cubes.push_back(std::vector<scene::ISceneNode*>());
+		atoms.push_back(std::vector<scene::ISceneNode*>());
 		for (int x = 0; x < gameBoardSize; ++x) {
 
 			core::vector3df cubePosition = core::vector3df(gameBoardTopLeftOffset + 3*x, 0, gameBoardTopLeftOffset + 3*y);
-			cubes[y].push_back(createCube(driver, smgr, cube, cubePosition, cubeColor, y*gameBoardSize+x));
+			cubes[y].push_back(createNode(driver, smgr, cube, cubePosition, cubeColor, y*gameBoardSize+x));
+			atoms[y].push_back(createNode(driver, smgr, atom, cubePosition + core::vector3df(0,-1,0), atomColor, y*gameBoardSize+x));
+			atoms[y][x]->setVisible(false);
 
 			if (x == 0) {
 				core::vector3df raycubePosition = cubes[y][x]->getPosition() + core::vector3df(-5,0,0);
-				bottomRaycubes.push_back(createCube(driver, smgr, cube, raycubePosition, raycubeColor));
+				bottomRaycubes.push_back(createNode(driver, smgr, cube, raycubePosition, raycubeColor));
 			}
 			if (y == 0) {
 				core::vector3df raycubePosition = cubes[y][x]->getPosition() + core::vector3df(0,0,-5);
-				leftRaycubes.push_back(createCube(driver, smgr, cube, raycubePosition, raycubeColor));
+				leftRaycubes.push_back(createNode(driver, smgr, cube, raycubePosition, raycubeColor));
 			}
 			if (x == gameBoardSize-1) {
 				core::vector3df raycubePosition = cubes[y][x]->getPosition() + core::vector3df(5,0,0);
-				topRaycubes.push_back(createCube(driver, smgr, cube, raycubePosition, raycubeColor));
+				topRaycubes.push_back(createNode(driver, smgr, cube, raycubePosition, raycubeColor));
 			}
 			if (y == gameBoardSize-1) {
 				core::vector3df raycubePosition = cubes[y][x]->getPosition() + core::vector3df(0,0,5);
-				rightRaycubes.push_back(createCube(driver, smgr, cube, raycubePosition, raycubeColor));
+				rightRaycubes.push_back(createNode(driver, smgr, cube, raycubePosition, raycubeColor));
 			}
 		}
 	}
@@ -182,11 +194,11 @@ int main() {
 
 	// set atoms
 	const int maxAtoms = 5;
-	std::vector<int> atoms;
-	while (atoms.size() < maxAtoms) {
+	std::vector<int> atomPositions;
+	while (atomPositions.size() < maxAtoms) {
 		int newPos = std::rand() % (gameBoardSize*gameBoardSize);
-		if (std::find(atoms.begin(), atoms.end(), newPos) == atoms.end()) {
-			atoms.push_back(newPos);
+		if (std::find(atomPositions.begin(), atomPositions.end(), newPos) == atomPositions.end()) {
+			atomPositions.push_back(newPos);
 			cubes[static_cast<int>(newPos/gameBoardSize)][newPos%gameBoardSize]->getMaterial(0).AmbientColor = video::SColor(255,255,255,255);
 			std::cout << "atom at: " << newPos << " x: " << static_cast<int>(newPos/gameBoardSize) << " , y: " << newPos%gameBoardSize << std::endl;
 		}
@@ -223,9 +235,9 @@ int main() {
 
 					video::SColor shadowedCube = video::SColor(0,0,0,255);
 					video::SColor reflectedCube = video::SColor(255,255,255,255);
-					video::SColor atomCube = video::SColor(255,255,0,255);
 					// react on mouse clicks depending on the cube type hit
 					if (raycubeHit > -1 && selectedSceneNode->getMaterial(0).AmbientColor == raycubeColor) {
+						// if a raycube is selected, run game logic
 						if (receiver.mouseState.leftButtonDown) {
 							std::cout << "array containing clicked raycube: " << raycubeHit << " index: " << index << std::endl;
 							bool horizontal;
@@ -257,13 +269,13 @@ int main() {
 
 							// if atom left or right of straight path: if step==0: lighten current (reflect)
 							if ((horizontal && y < gameBoardSize-1 &&
-							  std::find(atoms.begin(), atoms.end(), cubes[x][y+1]->getID()) != atoms.end()) ||
+							  std::find(atomPositions.begin(), atomPositions.end(), cubes[x][y+1]->getID()) != atomPositions.end()) ||
 							  (horizontal && y > 0
-							  && std::find(atoms.begin(), atoms.end(), cubes[x][y-1]->getID()) != atoms.end()) ||
+							  && std::find(atomPositions.begin(), atomPositions.end(), cubes[x][y-1]->getID()) != atomPositions.end()) ||
 							  (!horizontal && x < gameBoardSize-1 &&
-							  std::find(atoms.begin(), atoms.end(), cubes[x+1][y]->getID()) != atoms.end())||
+							  std::find(atomPositions.begin(), atomPositions.end(), cubes[x+1][y]->getID()) != atomPositions.end())||
 							  (!horizontal && x > 0 &&
-							  std::find(atoms.begin(), atoms.end(), cubes[x-1][y]->getID()) != atoms.end())) {
+							  std::find(atomPositions.begin(), atomPositions.end(), cubes[x-1][y]->getID()) != atomPositions.end())) {
 								std::cout << "atom next to ray step 0" << std::endl;
 								raycubes[raycubeHit][index]->getMaterial(0).AmbientColor = reflectedCube;
 							} else {
@@ -304,7 +316,7 @@ int main() {
 										break;
 									}
 									// if atom in straight path: color current (hit)
-									if (std::find(atoms.begin(), atoms.end(), cubes[x][y]->getID()) != atoms.end()) {
+									if (std::find(atomPositions.begin(), atomPositions.end(), cubes[x][y]->getID()) != atomPositions.end()) {
 										std::cout << "atom hit" << std::endl;
 										raycubes[raycubeHit][index]->getMaterial(0).AmbientColor = raycolors.back();
 										raycolors.pop_back();
@@ -312,9 +324,9 @@ int main() {
 									}
 									// if atom left or right of straight path: if step!=0: change path away from atom (deflect)
 									if (horizontal && y < gameBoardSize-1
-									&& std::find(atoms.begin(), atoms.end(), cubes[x][y+1]->getID()) != atoms.end()) {
+									&& std::find(atomPositions.begin(), atomPositions.end(), cubes[x][y+1]->getID()) != atomPositions.end()) {
 										if (horizontal && y > 0
-										&& std::find(atoms.begin(), atoms.end(), cubes[x][y-1]->getID()) != atoms.end()) {
+										&& std::find(atomPositions.begin(), atomPositions.end(), cubes[x][y-1]->getID()) != atomPositions.end()) {
 											std::cout << "double deflection on horizontal path" << std::endl;
 											x -= incrementor;
 											incrementor *= -1;
@@ -325,9 +337,9 @@ int main() {
 										incrementor = -1;
 									}
 									if (horizontal && y > 0
-									&& std::find(atoms.begin(), atoms.end(), cubes[x][y-1]->getID()) != atoms.end()) {
+									&& std::find(atomPositions.begin(), atomPositions.end(), cubes[x][y-1]->getID()) != atomPositions.end()) {
 										if (horizontal && y < gameBoardSize-1
-										&& std::find(atoms.begin(), atoms.end(), cubes[x][y+1]->getID()) != atoms.end()) {
+										&& std::find(atomPositions.begin(), atomPositions.end(), cubes[x][y+1]->getID()) != atomPositions.end()) {
 											std::cout << "double deflection on horizontal path" << std::endl;
 											x -= incrementor;
 											incrementor *= -1;
@@ -339,9 +351,9 @@ int main() {
 										incrementor = 1;
 									  }
 									if (!horizontal && x < gameBoardSize-1
-									&& std::find(atoms.begin(), atoms.end(), cubes[x+1][y]->getID()) != atoms.end()) {
+									&& std::find(atomPositions.begin(), atomPositions.end(), cubes[x+1][y]->getID()) != atomPositions.end()) {
 										if (!horizontal && x > 0
-										&& std::find(atoms.begin(), atoms.end(), cubes[x-1][y]->getID()) != atoms.end()) {
+										&& std::find(atomPositions.begin(), atomPositions.end(), cubes[x-1][y]->getID()) != atomPositions.end()) {
 											std::cout << "double deflection on vertical path" << std::endl;
 											y -= incrementor;
 											incrementor *= -1;
@@ -352,9 +364,9 @@ int main() {
 										incrementor = -1;
 									}
 									if (!horizontal && x > 0
-									&& std::find(atoms.begin(), atoms.end(), cubes[x-1][y]->getID()) != atoms.end()) {
+									&& std::find(atomPositions.begin(), atomPositions.end(), cubes[x-1][y]->getID()) != atomPositions.end()) {
 										if (!horizontal && x < gameBoardSize-1
-										&& std::find(atoms.begin(), atoms.end(), cubes[x+1][y]->getID()) != atoms.end()) {
+										&& std::find(atomPositions.begin(), atomPositions.end(), cubes[x+1][y]->getID()) != atomPositions.end()) {
 											std::cout << "double deflection on vertical path" << std::endl;
 											y -= incrementor;
 											incrementor *= -1;
@@ -378,11 +390,12 @@ int main() {
 					} else {
 						// if an inner gameboard cube is selected, set or remove an atom (if atoms are left)
 						if (selectedSceneNode->getID() > -1) {
-							if (selectedSceneNode->getMaterial(0).AmbientColor != atomCube && receiver.mouseState.leftButtonDown && atomsSet < maxAtoms) {
-								selectedSceneNode->getMaterial(0).AmbientColor = atomCube;
+							scene::ISceneNode * selectedAtomCube = atoms[static_cast<int>(selectedSceneNode->getID()/gameBoardSize)][selectedSceneNode->getID()%gameBoardSize];
+							if (!selectedAtomCube->isVisible() && receiver.mouseState.leftButtonDown && atomsSet < maxAtoms) {
+								selectedAtomCube->setVisible(true);
 								++atomsSet;
-							} else if (selectedSceneNode->getMaterial(0).AmbientColor != cubeColor && receiver.mouseState.rightButtonDown) {
-								selectedSceneNode->getMaterial(0).AmbientColor = cubeColor;
+							} else if (selectedAtomCube->isVisible() && receiver.mouseState.rightButtonDown) {
+								selectedAtomCube->setVisible(false);
 								--atomsSet;
 							}
 						}
