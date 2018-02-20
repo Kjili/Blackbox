@@ -261,15 +261,31 @@ int main() {
 										std::cout << raycolors.back().getBlue() << std::endl;
 										raycubes[raycubeHit][index]->getMaterial(0).AmbientColor = raycolors.back();
 										if (x < 0) {
+											if (raycubeHit == 0 && index == y) { // if reflected back to the current cube
+												raycubes[raycubeHit][index]->getMaterial(0).AmbientColor = reflectedCube;
+												break;
+											}
 											raycubes[0][y]->getMaterial(0).AmbientColor = raycolors.back();
 										}
 										if (x >= gameBoardSize) {
+											if (raycubeHit == 1 && index == y) { // if reflected back to the current cube
+												raycubes[raycubeHit][index]->getMaterial(0).AmbientColor = reflectedCube;
+												break;
+											}
 											raycubes[1][y]->getMaterial(0).AmbientColor = raycolors.back();
 										}
 										if (y < 0) {
+											if (raycubeHit == 2 && index == x) { // if reflected back to the current cube
+												raycubes[raycubeHit][index]->getMaterial(0).AmbientColor = reflectedCube;
+												break;
+											}
 											raycubes[2][x]->getMaterial(0).AmbientColor = raycolors.back();
 										}
 										if (y >= gameBoardSize) {
+											if (raycubeHit == 3 && index == x) { // if reflected back to the current cube
+												raycubes[raycubeHit][index]->getMaterial(0).AmbientColor = reflectedCube;
+												break;
+											}
 											raycubes[3][x]->getMaterial(0).AmbientColor = raycolors.back();
 										}
 										raycolors.pop_back();
