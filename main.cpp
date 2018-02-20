@@ -4,8 +4,18 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
+#include <sstream>
+#include <string>
 
 using namespace irr;
+
+enum {
+	GUI_ID_RESET_BUTTON = 0
+};
+struct SAppContext {
+	IrrlichtDevice *device;
+	s32 counter;
+};
 
 // based on example 19 of irrlicht docs
 class MyEventReceiver : public IEventReceiver {
@@ -47,10 +57,30 @@ public:
 				break;
 			}
 		}
+		if (event.EventType == EET_GUI_EVENT) {
+			s32 id = event.GUIEvent.Caller->getID();
+			gui::IGUIEnvironment* guienv = Context.device->getGUIEnvironment();
+
+			switch(event.GUIEvent.EventType) {
+				case gui::EGET_BUTTON_CLICKED:
+					switch(id) {
+						case GUI_ID_RESET_BUTTON:
+							std::cout << "hi" << std::endl;
+							// TODO reset game
+							break;
+						default:
+							break;
+					}
+				default:
+					break;
+			}
+		}
 		return false;
 	}
 
-	MyEventReceiver() {}
+	MyEventReceiver(SAppContext & context) : Context(context) {}
+private:
+	SAppContext & Context;
 };
 
 scene::ISceneNode* createNode(video::IVideoDriver* driver, scene::ISceneManager* smgr, scene::IMesh* mesh, core::vector3df pos, video::SColor color, int id=-1) {
@@ -111,8 +141,7 @@ int main() {
 	std::srand(std::time(nullptr));
 
 	// start up the engine
-	MyEventReceiver receiver;
-	IrrlichtDevice *device = createDevice(video::EDT_OPENGL, core::dimension2d<u32>(640,480), 16, false, false, false, &receiver);
+	IrrlichtDevice *device = createDevice(video::EDT_OPENGL, core::dimension2d<u32>(640,480));
 	if (device == 0) {
 		return 1;
 	}
@@ -123,6 +152,16 @@ int main() {
 	// add video driver and scene manager
 	video::IVideoDriver* driver = device->getVideoDriver();
 	scene::ISceneManager* smgr = device->getSceneManager();
+	gui::IGUIEnvironment* guienv = device->getGUIEnvironment();
+
+	// build gui
+	guienv->addButton(core::rect<s32>(10,10,100,50), 0, GUI_ID_RESET_BUTTON, L"Reset", L"Reset Game");
+	gui::IGUIFont* font = guienv->getBuiltInFont();
+	SAppContext context;
+	context.device = device;
+	context.counter = 0;
+	MyEventReceiver receiver(context);
+	device->setEventReceiver(&receiver);
 
 	// add light
 	smgr->setAmbientLight(video::SColorf(0.5,0.5,0.5,1));
@@ -206,6 +245,7 @@ int main() {
 
 	// draw the scene
 	int atomsSet = 0;
+	int penalty = 0;
 	while(device->run() && driver) {
 		if (device->isWindowActive()) {
 			driver->beginScene(true, true, video::SColor(255,150,150,255));
@@ -237,6 +277,8 @@ int main() {
 					video::SColor reflectedCube = video::SColor(255,255,255,255);
 					// react on mouse clicks depending on the cube type hit
 					if (raycubeHit > -1 && selectedSceneNode->getMaterial(0).AmbientColor == raycubeColor) {
+						// each marker set costs a point
+						++penalty;
 						// if a raycube is selected, run game logic
 						if (receiver.mouseState.leftButtonDown) {
 							std::cout << "array containing clicked raycube: " << raycubeHit << " index: " << index << std::endl;
@@ -404,8 +446,15 @@ int main() {
 					//std::cout << "atoms set: " << atomsSet << std::endl;
 				}
 			}
+			std::stringstream ss;
+			ss << "Penalty: " << penalty; // TODO add final evaluation
+			std::string s = ss.str();
+			if (font) {
+				font->draw(s.c_str(), core::rect<s32>(150,10,300,50), video::SColor(255,255,255,255));
+			}
 
 			smgr->drawAll();
+			guienv->drawAll();
 			driver->endScene();
 		}
 	}
