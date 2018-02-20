@@ -69,6 +69,43 @@ scene::ISceneNode* createCube(video::IVideoDriver* driver, scene::ISceneManager*
 	return node;
 }
 
+std::vector<video::SColor> raycolors {
+	video::SColor(128, 0, 128, 255),
+	video::SColor(128, 0, 0, 255),
+	video::SColor(128, 128, 0, 255),
+	video::SColor(0, 128, 128, 255),
+	video::SColor(250, 128, 114, 255),
+	video::SColor(220, 20, 60, 255),
+	video::SColor(139, 0, 0, 255),
+	video::SColor(255, 69, 0, 255),
+	video::SColor(255, 140, 0, 255),
+	video::SColor(255, 215, 0, 255),
+	video::SColor(222, 184, 135, 255),
+	video::SColor(188, 143, 143, 255),
+	video::SColor(218, 165, 32, 255),
+	video::SColor(205, 133, 63, 255),
+	video::SColor(210, 105, 30, 255),
+	video::SColor(139, 69, 19, 255),
+	video::SColor(85, 107, 47, 255),
+	video::SColor(154, 205, 50, 255),
+	video::SColor(50, 205, 50, 255),
+	video::SColor(124, 252, 0, 255),
+	video::SColor(0, 255, 127, 255),
+	video::SColor(152, 251, 152, 255),
+	video::SColor(102, 205, 170, 255),
+	video::SColor(127, 255, 212, 255),
+	video::SColor(0, 206, 209, 255),
+	video::SColor(135, 206, 235, 255),
+	video::SColor(0, 191, 255, 255),
+	video::SColor(100, 149, 237, 255),
+	video::SColor(238, 130, 238, 255),
+	video::SColor(138, 43, 226, 255),
+	video::SColor(75, 0, 130, 255),
+	video::SColor(255, 192, 203, 255),
+	video::SColor(255, 20, 147, 255),
+	video::SColor(199, 21, 133, 255)
+};
+
 int main() {
 	//initialize random
 	std::srand(std::time(nullptr));
@@ -102,7 +139,7 @@ int main() {
 	const int gameBoardSize = 8;
 	const int gameBoardTopLeftOffset = -(3*gameBoardSize)/2;
 	video::SColor cubeColor = video::SColor(0,0,128,255);//0,16,156,255);
-	video::SColor raycubeColor = video::SColor(0,128,0,255);//0,156,5,255);
+	video::SColor raycubeColor = video::SColor(0,0,0,255);//video::SColor(0,128,0,255);//0,156,5,255);
 
 	std::vector<std::vector<scene::ISceneNode*>> cubes;
 	std::vector<scene::ISceneNode*> leftRaycubes;
@@ -184,36 +221,12 @@ int main() {
 						}
 					}
 
-					std::vector<video::SColor> raycolors = {
-						video::SColor(128,0,128,255),
-						video::SColor(128,0,0,255),
-						video::SColor(128,128,0,255),
-						video::SColor(0,128,128,255),
-						video::SColor(255,165,0,255),
-						video::SColor(255,215,0,255),
-						video::SColor(218,165,32,255),
-						video::SColor(60,179,113,255),
-						video::SColor(64,224,208,255),
-						video::SColor(100,149,237,255),
-						video::SColor(0,191,255,255),
-						video::SColor(138,43,226,255),
-						video::SColor(218,112,214,255),
-						video::SColor(210,105,30,255),
-						video::SColor(255,235,205,255),
-						video::SColor(238,130,238,255)
-					};
 					video::SColor shadowedCube = video::SColor(0,0,0,255);
 					video::SColor reflectedCube = video::SColor(255,255,255,255);
 					video::SColor atomCube = video::SColor(255,255,0,255);
 					// react on mouse clicks depending on the cube type hit
 					if (raycubeHit > -1 && selectedSceneNode->getMaterial(0).AmbientColor == raycubeColor) {
 						if (receiver.mouseState.leftButtonDown) {
-							// game logic:
-							//if atom in straight path: darken opposite raycube, color current
-							//if atom left or right of straight path:
-							//	if step==0: lighten current
-							//	else: change path away from atom
-							//if raycube reached: color raycube
 							std::cout << "array containing clicked raycube: " << raycubeHit << " index: " << index << std::endl;
 							bool horizontal;
 							int incrementor;
@@ -258,7 +271,6 @@ int main() {
 									// if raycube reached: color raycube
 									if (x >= gameBoardSize || x < 0 || y >= gameBoardSize || y < 0) {
 										std::cout << "border reached at x: " << x << " y: " << y << " index: " << index << " raycubeHit: " << raycubeHit << std::endl;
-										std::cout << raycolors.back().getBlue() << std::endl;
 										raycubes[raycubeHit][index]->getMaterial(0).AmbientColor = raycolors.back();
 										if (x < 0) {
 											if (raycubeHit == 0 && index == y) { // if reflected back to the current cube
