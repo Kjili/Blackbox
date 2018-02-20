@@ -310,14 +310,14 @@ int main() {
 							}
 
 							// if atom left or right of straight path: if step==0: lighten current (reflect)
-							if ((horizontal && y < gameBoardSize-1 &&
-							  std::find(atomPositions.begin(), atomPositions.end(), cubes[x][y+1]->getID()) != atomPositions.end()) ||
-							  (horizontal && y > 0
-							  && std::find(atomPositions.begin(), atomPositions.end(), cubes[x][y-1]->getID()) != atomPositions.end()) ||
-							  (!horizontal && x < gameBoardSize-1 &&
-							  std::find(atomPositions.begin(), atomPositions.end(), cubes[x+1][y]->getID()) != atomPositions.end())||
-							  (!horizontal && x > 0 &&
-							  std::find(atomPositions.begin(), atomPositions.end(), cubes[x-1][y]->getID()) != atomPositions.end())) {
+							if ((horizontal && y < gameBoardSize-1
+							&& std::find(atomPositions.begin(), atomPositions.end(), cubes[x][y+1]->getID()) != atomPositions.end())
+							|| (horizontal && y > 0
+							&& std::find(atomPositions.begin(), atomPositions.end(), cubes[x][y-1]->getID()) != atomPositions.end())
+							|| (!horizontal && x < gameBoardSize-1
+							&& std::find(atomPositions.begin(), atomPositions.end(), cubes[x+1][y]->getID()) != atomPositions.end())
+							|| (!horizontal && x > 0
+							&& std::find(atomPositions.begin(), atomPositions.end(), cubes[x-1][y]->getID()) != atomPositions.end())) {
 								std::cout << "atom next to ray step 0" << std::endl;
 								raycubes[raycubeHit][index]->getMaterial(0).AmbientColor = reflectedCube;
 							} else {
@@ -391,7 +391,7 @@ int main() {
 										horizontal = !horizontal;
 										x -= incrementor;
 										incrementor = 1;
-									  }
+									}
 									if (!horizontal && x < gameBoardSize-1
 									&& std::find(atomPositions.begin(), atomPositions.end(), cubes[x+1][y]->getID()) != atomPositions.end()) {
 										if (!horizontal && x > 0
