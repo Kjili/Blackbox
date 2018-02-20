@@ -2,6 +2,8 @@
 #include <vector>
 #include <algorithm>
 #include <iostream>
+#include <cstdlib>
+#include <ctime>
 
 using namespace irr;
 
@@ -68,6 +70,9 @@ scene::ISceneNode* createCube(video::IVideoDriver* driver, scene::ISceneManager*
 }
 
 int main() {
+	//initialize random
+	std::srand(std::time(nullptr));
+
 	// start up the engine
 	MyEventReceiver receiver;
 	IrrlichtDevice *device = createDevice(video::EDT_OPENGL, core::dimension2d<u32>(640,480), 16, false, false, false, &receiver);
@@ -138,8 +143,18 @@ int main() {
 	// add collision manager
 	scene::ISceneCollisionManager* collmgr = smgr->getSceneCollisionManager();
 
-	// draw the scene
+	// set atoms
 	const int maxAtoms = 5;
+	std::vector<int> atoms;
+	while (atoms.size() < maxAtoms) {
+		int newPos = std::rand() % (gameBoardSize*gameBoardSize);
+		if (std::find(atoms.begin(), atoms.end(), newPos) == atoms.end()) {
+			atoms.push_back(newPos);
+			std::cout << "atom at: " << newPos << " x: " << static_cast<int>(newPos/gameBoardSize) << " , y: " << newPos%gameBoardSize << std::endl;
+		}
+	}
+
+	// draw the scene
 	int atomsSet = 0;
 	while(device->run() && driver) {
 		if (device->isWindowActive()) {
