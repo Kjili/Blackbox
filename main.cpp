@@ -118,23 +118,23 @@ int main() {
 
 			if (x == 0) {
 				core::vector3df raycubePosition = cubes[y][x]->getPosition() + core::vector3df(-5,0,0);
-				leftRaycubes.push_back(createCube(driver, smgr, cube, raycubePosition, raycubeColor));
+				bottomRaycubes.push_back(createCube(driver, smgr, cube, raycubePosition, raycubeColor));
 			}
 			if (y == 0) {
 				core::vector3df raycubePosition = cubes[y][x]->getPosition() + core::vector3df(0,0,-5);
-				topRaycubes.push_back(createCube(driver, smgr, cube, raycubePosition, raycubeColor));
+				leftRaycubes.push_back(createCube(driver, smgr, cube, raycubePosition, raycubeColor));
 			}
 			if (x == gameBoardSize-1) {
 				core::vector3df raycubePosition = cubes[y][x]->getPosition() + core::vector3df(5,0,0);
-				rightRaycubes.push_back(createCube(driver, smgr, cube, raycubePosition, raycubeColor));
+				topRaycubes.push_back(createCube(driver, smgr, cube, raycubePosition, raycubeColor));
 			}
 			if (y == gameBoardSize-1) {
 				core::vector3df raycubePosition = cubes[y][x]->getPosition() + core::vector3df(0,0,5);
-				bottomRaycubes.push_back(createCube(driver, smgr, cube, raycubePosition, raycubeColor));
+				rightRaycubes.push_back(createCube(driver, smgr, cube, raycubePosition, raycubeColor));
 			}
 		}
 	}
-	std::vector<std::vector<scene::ISceneNode*>> raycubes = {leftRaycubes, rightRaycubes, topRaycubes, bottomRaycubes};
+	std::vector<std::vector<scene::ISceneNode*>> raycubes = {leftRaycubes, rightRaycubes, bottomRaycubes, topRaycubes};
 
 	// add a static camera that views the gameboard
 	smgr->addCameraSceneNode(0, core::vector3df(0,-30,0), core::vector3df(0,0,0));
