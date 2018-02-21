@@ -294,6 +294,9 @@ int main() {
 				for (auto & pos : atomPositions) {
 					if (!atoms[static_cast<int>(pos/gameBoardSize)][pos%gameBoardSize]->isVisible()) {
 						penalty += 5;
+						cubes[static_cast<int>(pos/gameBoardSize)][pos%gameBoardSize]->getMaterial(0).AmbientColor = video::SColor(255,255,0,0);
+					} else {
+						cubes[static_cast<int>(pos/gameBoardSize)][pos%gameBoardSize]->getMaterial(0).AmbientColor = video::SColor(255,0,255,0);
 					}
 				}
 				receiver.context.eval = false;
