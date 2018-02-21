@@ -161,10 +161,17 @@ int main() {
 
 	// build and configure gui
 	int screenX = driver->getScreenSize().Width;
-	int screenY = driver->getScreenSize().Height;
-	guienv->addButton(core::rect<s32>(10,10,100,50), 0, GUI_ID_EVALUATE_BUTTON, L"Evaluate", L"Show Results");
-	guienv->addButton(core::rect<s32>(screenX-10-90,10,screenX-10,50), 0, GUI_ID_RESET_BUTTON, L"Reset", L"Reset Game");
-	gui::IGUIFont* font = guienv->getBuiltInFont();
+	video::SColor textcolor(255,255,255,255);
+	gui::IGUIFont* font = guienv->getFont("../fonts/bigfont.png");
+	if (!font) {
+		std::cout << "font not found" << std::endl;
+		font = guienv->getBuiltInFont();
+	}
+	guienv->getSkin()->setFont(font);
+	guienv->getSkin()->setColor(gui::EGUI_DEFAULT_COLOR::EGDC_BUTTON_TEXT, textcolor);
+	guienv->getSkin()->setColor(gui::EGUI_DEFAULT_COLOR::EGDC_TOOLTIP, textcolor);
+	guienv->addButton(core::rect<s32>(10,10,200,50), 0, GUI_ID_EVALUATE_BUTTON, L"Evaluate", L"Show Results");
+	guienv->addButton(core::rect<s32>(screenX-10-190,10,screenX-10,50), 0, GUI_ID_RESET_BUTTON, L"Reset", L"Reset Game");
 	receiver.context.device = device;
 
 	// add light
@@ -503,7 +510,7 @@ int main() {
 			ss << "Penalty: " << penalty;
 			std::string s = ss.str();
 			if (font) {
-				font->draw(s.c_str(), core::rect<s32>(screenX/2-35,10,screenX/2+35,50), video::SColor(255,0,0,0));
+				font->draw(s.c_str(), core::rect<s32>(screenX/2-90,10,screenX/2+90,50), textcolor);
 			}
 
 			// draw scene and gui
