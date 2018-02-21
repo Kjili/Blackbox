@@ -10,11 +10,8 @@
 using namespace irr;
 
 enum {
-	GUI_ID_RESET_BUTTON = 0
-};
-struct SAppContext {
-	IrrlichtDevice *device;
-	s32 counter;
+	GUI_ID_RESET_BUTTON = 0,
+	GUI_ID_EVALUATE_BUTTON
 };
 
 // based on example 19 of irrlicht docs
@@ -27,6 +24,12 @@ public:
 		bool rightButtonDown;
 		SMouseState(): leftButtonDown(false), rightButtonDown(false) {}
 	} mouseState;
+	struct SAppContext {
+		IrrlichtDevice *device;
+		bool reset;
+		bool eval;
+		SAppContext(): reset(false), eval(false) {}
+	} context;
 
 	// track mouse movements and clicks
 	virtual bool OnEvent(const SEvent& event) {
@@ -59,14 +62,16 @@ public:
 		}
 		if (event.EventType == EET_GUI_EVENT) {
 			s32 id = event.GUIEvent.Caller->getID();
-			gui::IGUIEnvironment* guienv = Context.device->getGUIEnvironment();
+			gui::IGUIEnvironment* guienv = context.device->getGUIEnvironment();
 
 			switch(event.GUIEvent.EventType) {
 				case gui::EGET_BUTTON_CLICKED:
 					switch(id) {
 						case GUI_ID_RESET_BUTTON:
-							std::cout << "hi" << std::endl;
-							// TODO reset game
+							context.reset = true;
+							break;
+						case GUI_ID_EVALUATE_BUTTON:
+							context.eval = true;
 							break;
 						default:
 							break;
@@ -77,10 +82,6 @@ public:
 		}
 		return false;
 	}
-
-	MyEventReceiver(SAppContext & context) : Context(context) {}
-private:
-	SAppContext & Context;
 };
 
 scene::ISceneNode* createNode(video::IVideoDriver* driver, scene::ISceneManager* smgr, scene::IMesh* mesh, core::vector3df pos, video::SColor color, int id=-1) {
@@ -141,7 +142,10 @@ int main() {
 	std::srand(std::time(nullptr));
 
 	// start up the engine
-	IrrlichtDevice *device = createDevice(video::EDT_OPENGL, core::dimension2d<u32>(640,480));
+	MyEventReceiver receiver;
+	int screenX = 640;
+	int screenY = 480;
+	IrrlichtDevice *device = createDevice(video::EDT_OPENGL, core::dimension2d<u32>(screenX,screenY), 16, false, false, false, &receiver);
 	if (device == 0) {
 		return 1;
 	}
@@ -155,13 +159,10 @@ int main() {
 	gui::IGUIEnvironment* guienv = device->getGUIEnvironment();
 
 	// build gui
-	guienv->addButton(core::rect<s32>(10,10,100,50), 0, GUI_ID_RESET_BUTTON, L"Reset", L"Reset Game");
+	guienv->addButton(core::rect<s32>(10,10,100,50), 0, GUI_ID_EVALUATE_BUTTON, L"Evaluate", L"Show Results");
+	guienv->addButton(core::rect<s32>(screenX-10-90,10,screenX-10,50), 0, GUI_ID_RESET_BUTTON, L"Reset", L"Reset Game");
 	gui::IGUIFont* font = guienv->getBuiltInFont();
-	SAppContext context;
-	context.device = device;
-	context.counter = 0;
-	MyEventReceiver receiver(context);
-	device->setEventReceiver(&receiver);
+	receiver.context.device = device;
 
 	// add light
 	smgr->setAmbientLight(video::SColorf(0.5,0.5,0.5,1));
@@ -451,7 +452,7 @@ int main() {
 			ss << "Penalty: " << penalty; // TODO add final evaluation
 			std::string s = ss.str();
 			if (font) {
-				font->draw(s.c_str(), core::rect<s32>(150,10,300,50), video::SColor(255,255,255,255));
+				font->draw(s.c_str(), core::rect<s32>(screenX/2-35,10,screenX/2+35,50), video::SColor(255,255,255,255));
 			}
 
 			smgr->drawAll();
