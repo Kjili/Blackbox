@@ -6,6 +6,7 @@
 #include <ctime>
 #include <sstream>
 #include <string>
+#include <random>
 
 using namespace irr;
 
@@ -250,6 +251,8 @@ int main() {
 		}
 	}
 
+	// shuffle colors
+	std::shuffle(colors.begin(), colors.end(), std::default_random_engine{});
 	// init remaining required variables
 	int atomsSet = 0;
 	int penalty = 0;
