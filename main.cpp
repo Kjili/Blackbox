@@ -282,6 +282,14 @@ int main() {
 			}
 
 			// check eval
+			if (receiver.context.eval) {
+				for (auto & pos : atomPositions) {
+					if (!atoms[static_cast<int>(pos/gameBoardSize)][pos%gameBoardSize]->isVisible()) {
+						penalty += 5;
+					}
+				}
+				receiver.context.eval = false;
+			}
 
 			// check for a mouse click
 			core::position2d<s32> position;
@@ -480,7 +488,7 @@ int main() {
 				}
 			}
 			std::stringstream ss;
-			ss << "Penalty: " << penalty; // TODO add final evaluation
+			ss << "Penalty: " << penalty;
 			std::string s = ss.str();
 			if (font) {
 				font->draw(s.c_str(), core::rect<s32>(screenX/2-35,10,screenX/2+35,50), video::SColor(255,255,255,255));
