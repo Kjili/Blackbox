@@ -93,6 +93,9 @@ scene::ISceneNode* createNode(video::IVideoDriver* driver, scene::ISceneManager*
 		node->setMaterialFlag(video::EMF_BILINEAR_FILTER, false);
 		//node->setMaterialTexture(0, driver->getTexture("../models/cube.png"));
 		node->getMaterial(0).AmbientColor = color;
+		//node->getMaterial(0).DiffuseColor = color; // only with lightnode
+		//node->getMaterial(0).SpecularColor = color; // only with lightnode
+		node->getMaterial(0).EmissiveColor = color;
 		// correct Blender rotation for Irrlicht (not really necessary for a cube, just for reference)
 		node->setRotation(core::vector3df(0,0,180));
 		node->setPosition(pos);
@@ -102,40 +105,40 @@ scene::ISceneNode* createNode(video::IVideoDriver* driver, scene::ISceneManager*
 }
 
 std::vector<video::SColor> colors {
-	video::SColor(128, 0, 128, 255),
-	video::SColor(128, 0, 0, 255),
-	video::SColor(128, 128, 0, 255),
-	video::SColor(0, 128, 128, 255),
-	video::SColor(250, 128, 114, 255),
-	video::SColor(220, 20, 60, 255),
-	video::SColor(139, 0, 0, 255),
-	video::SColor(255, 69, 0, 255),
-	video::SColor(255, 140, 0, 255),
-	video::SColor(255, 215, 0, 255),
-	video::SColor(222, 184, 135, 255),
-	video::SColor(188, 143, 143, 255),
-	video::SColor(218, 165, 32, 255),
-	video::SColor(205, 133, 63, 255),
-	video::SColor(210, 105, 30, 255),
-	video::SColor(139, 69, 19, 255),
-	video::SColor(85, 107, 47, 255),
-	video::SColor(154, 205, 50, 255),
-	video::SColor(50, 205, 50, 255),
-	video::SColor(124, 252, 0, 255),
-	video::SColor(0, 255, 127, 255),
-	video::SColor(152, 251, 152, 255),
-	video::SColor(102, 205, 170, 255),
-	video::SColor(127, 255, 212, 255),
-	video::SColor(0, 206, 209, 255),
-	video::SColor(135, 206, 235, 255),
-	video::SColor(0, 191, 255, 255),
-	video::SColor(100, 149, 237, 255),
-	video::SColor(238, 130, 238, 255),
-	video::SColor(138, 43, 226, 255),
-	video::SColor(75, 0, 130, 255),
-	video::SColor(255, 192, 203, 255),
-	video::SColor(255, 20, 147, 255),
-	video::SColor(199, 21, 133, 255)
+	video::SColor(255, 128, 0, 128),
+	video::SColor(255, 128, 0, 0),
+	video::SColor(255, 128, 128, 0),
+	video::SColor(255, 0, 128, 128),
+	video::SColor(255, 250, 128, 114),
+	video::SColor(255, 220, 20, 60),
+	video::SColor(255, 139, 0, 0),
+	video::SColor(255, 255, 69, 0),
+	video::SColor(255, 255, 140, 0),
+	video::SColor(255, 255, 215, 0),
+	video::SColor(255, 222, 184, 135),
+	video::SColor(255, 188, 143, 143),
+	video::SColor(255, 218, 165, 32),
+	video::SColor(255, 205, 133, 63),
+	video::SColor(255, 210, 105, 30),
+	video::SColor(255, 139, 69, 19),
+	video::SColor(255, 85, 107, 47),
+	video::SColor(255, 154, 205, 50),
+	video::SColor(255, 50, 205, 50),
+	video::SColor(255, 124, 252, 0),
+	video::SColor(255, 0, 255, 127),
+	video::SColor(255, 152, 251, 152),
+	video::SColor(255, 102, 205, 170),
+	video::SColor(255, 127, 255, 212),
+	video::SColor(255, 0, 206, 209),
+	video::SColor(255, 135, 206, 235),
+	video::SColor(255, 0, 191, 255),
+	video::SColor(255, 100, 149, 237),
+	video::SColor(255, 238, 130, 238),
+	video::SColor(255, 138, 43, 226),
+	video::SColor(255, 75, 0, 130),
+	video::SColor(255, 255, 192, 203),
+	video::SColor(255, 255, 20, 147),
+	video::SColor(255, 199, 21, 133)
 };
 
 int main() {
@@ -166,8 +169,8 @@ int main() {
 	receiver.context.device = device;
 
 	// add light
-	smgr->setAmbientLight(video::SColorf(0.5,0.5,0.5,1));
-	scene::ILightSceneNode* light1 = smgr->addLightSceneNode(0, core::vector3df(0,-100,0), video::SColorf(0.3,0.3,0.3), 1.0f, 1);
+	smgr->setAmbientLight(video::SColorf(1,1,1));
+	//scene::ILightSceneNode* light1 = smgr->addLightSceneNode(0, core::vector3df(0,-100,0), video::SColorf(0.3,0.3,0.3), 1.0f);
 
 	// load the cube
 	scene::IMesh* cube = smgr->getMesh("../models/cube.obj");
@@ -186,9 +189,9 @@ int main() {
 	// init constant variables
 	const int gameBoardSize = 8;
 	const int gameBoardTopLeftOffset = -(3*gameBoardSize)/2;
-	const video::SColor cubeColor = video::SColor(0,0,128,255);//0,16,156,255);
-	const video::SColor raycubeColor = video::SColor(0,0,0,255);//video::SColor(0,128,0,255);//0,156,5,255);
-	const video::SColor atomColor = video::SColor(255,255,0,255);
+	const video::SColor cubeColor = video::SColor(255,0,0,128);//255,0,16,156);
+	const video::SColor raycubeColor = video::SColor(255,0,0,0);//video::SColor(255,0,128,0);//255,0,156,5);
+	const video::SColor atomColor = video::SColor(255,255,255,0);
 	const video::SColor reflectedCube = video::SColor(255,255,255,255);
 	const int maxAtoms = 5;
 
@@ -497,7 +500,7 @@ int main() {
 			ss << "Penalty: " << penalty;
 			std::string s = ss.str();
 			if (font) {
-				font->draw(s.c_str(), core::rect<s32>(screenX/2-35,10,screenX/2+35,50), video::SColor(255,255,255,255));
+				font->draw(s.c_str(), core::rect<s32>(screenX/2-35,10,screenX/2+35,50), video::SColor(255,0,0,0));
 			}
 
 			// draw scene and gui
