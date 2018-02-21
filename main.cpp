@@ -60,6 +60,7 @@ public:
 				break;
 			}
 		}
+		// track gui clicks
 		if (event.EventType == EET_GUI_EVENT) {
 			s32 id = event.GUIEvent.Caller->getID();
 			gui::IGUIEnvironment* guienv = context.device->getGUIEnvironment();
@@ -138,7 +139,7 @@ std::vector<video::SColor> colors {
 };
 
 int main() {
-	//initialize random
+	// initialize random
 	std::srand(std::time(nullptr));
 
 	// start up the engine
@@ -149,16 +150,16 @@ int main() {
 	if (device == 0) {
 		return 1;
 	}
-	// set title
+	// configure device
 	device->setWindowCaption(L"Blackbox");
 	//device->setResizable(true);
 
-	// add video driver and scene manager
+	// add video driver, scene manager and gui
 	video::IVideoDriver* driver = device->getVideoDriver();
 	scene::ISceneManager* smgr = device->getSceneManager();
 	gui::IGUIEnvironment* guienv = device->getGUIEnvironment();
 
-	// build gui
+	// build and configure gui
 	guienv->addButton(core::rect<s32>(10,10,100,50), 0, GUI_ID_EVALUATE_BUTTON, L"Evaluate", L"Show Results");
 	guienv->addButton(core::rect<s32>(screenX-10-90,10,screenX-10,50), 0, GUI_ID_RESET_BUTTON, L"Reset", L"Reset Game");
 	gui::IGUIFont* font = guienv->getBuiltInFont();
@@ -182,13 +183,16 @@ int main() {
 		return 1;
 	}
 
-	// add cubes to the scene to form the gameboard
+	// init constant variables
 	const int gameBoardSize = 8;
 	const int gameBoardTopLeftOffset = -(3*gameBoardSize)/2;
-	video::SColor cubeColor = video::SColor(0,0,128,255);//0,16,156,255);
-	video::SColor raycubeColor = video::SColor(0,0,0,255);//video::SColor(0,128,0,255);//0,156,5,255);
-	video::SColor atomColor = video::SColor(255,255,0,255);
+	const video::SColor cubeColor = video::SColor(0,0,128,255);//0,16,156,255);
+	const video::SColor raycubeColor = video::SColor(0,0,0,255);//video::SColor(0,128,0,255);//0,156,5,255);
+	const video::SColor atomColor = video::SColor(255,255,0,255);
+	const video::SColor reflectedCube = video::SColor(255,255,255,255);
+	const int maxAtoms = 5;
 
+	// add cubes to the scene to form the gameboard
 	std::vector<std::vector<scene::ISceneNode*>> cubes;
 	std::vector<std::vector<scene::ISceneNode*>> atoms;
 	std::vector<scene::ISceneNode*> leftRaycubes;
@@ -232,8 +236,7 @@ int main() {
 	// add collision manager
 	scene::ISceneCollisionManager* collmgr = smgr->getSceneCollisionManager();
 
-	// set atoms
-	const int maxAtoms = 5;
+	// get random positions for atoms (defines their placement)
 	std::vector<int> atomPositions;
 	while (atomPositions.size() < maxAtoms) {
 		int newPos = std::rand() % (gameBoardSize*gameBoardSize);
@@ -244,10 +247,12 @@ int main() {
 		}
 	}
 
-	// draw the scene
+	// init remaining required variables
 	int atomsSet = 0;
 	int penalty = 0;
 	std::vector<video::SColor> raycolors(colors);
+
+	// run
 	while(device->run() && driver) {
 		if (device->isWindowActive()) {
 			driver->beginScene(true, true, video::SColor(255,150,150,255));
@@ -291,17 +296,17 @@ int main() {
 				receiver.context.eval = false;
 			}
 
-			// check for a mouse click
+			// check for a mouse click (not gui)
 			core::position2d<s32> position;
 			if (receiver.mouseState.leftButtonDown || receiver.mouseState.rightButtonDown) {
 				position = receiver.mouseState.pos;
 
-				// check collision
+				// check collision of the mouse click with a scene node
 				scene::ISceneNode * selectedSceneNode = collmgr->getSceneNodeFromScreenCoordinatesBB(position);
 
-				// if there is a node below the position color the node
+				// react on mouse clicks depending on the node type clicked
 				if (selectedSceneNode) {
-					// if a raycube is clicked, check at which position it is in the array
+					// if a raycube is clicked, check at which position it is in the vector
 					int raycubeHit = -1;
 					std::vector<scene::ISceneNode*>::iterator it;
 					int index;
@@ -314,13 +319,11 @@ int main() {
 						}
 					}
 
-					video::SColor shadowedCube = video::SColor(0,0,0,255);
-					video::SColor reflectedCube = video::SColor(255,255,255,255);
-					// react on mouse clicks depending on the cube type hit
+					// if a raycube is selected, run game logic
 					if (raycubeHit > -1 && selectedSceneNode->getMaterial(0).AmbientColor == raycubeColor) {
-						// each marker set costs a point
+						// each raycube clicked costs a point
 						++penalty;
-						// if a raycube is selected, run game logic
+						// init variables dependent on the raycube clicked
 						if (receiver.mouseState.leftButtonDown) {
 							std::cout << "array containing clicked raycube: " << raycubeHit << " index: " << index << std::endl;
 							bool horizontal;
@@ -362,34 +365,35 @@ int main() {
 								std::cout << "atom next to ray step 0" << std::endl;
 								raycubes[raycubeHit][index]->getMaterial(0).AmbientColor = reflectedCube;
 							} else {
+								// shoot ray
 								while (true) {
 									// if raycube reached: color raycube
 									if (x >= gameBoardSize || x < 0 || y >= gameBoardSize || y < 0) {
 										std::cout << "border reached at x: " << x << " y: " << y << " index: " << index << " raycubeHit: " << raycubeHit << std::endl;
 										raycubes[raycubeHit][index]->getMaterial(0).AmbientColor = raycolors.back();
 										if (x < 0) {
-											if (raycubeHit == 0 && index == y) { // if reflected back to the current cube
+											if (raycubeHit == 0 && index == y) { // if reflected back to the clicked raycube
 												raycubes[raycubeHit][index]->getMaterial(0).AmbientColor = reflectedCube;
 												break;
 											}
 											raycubes[0][y]->getMaterial(0).AmbientColor = raycolors.back();
 										}
 										if (x >= gameBoardSize) {
-											if (raycubeHit == 1 && index == y) { // if reflected back to the current cube
+											if (raycubeHit == 1 && index == y) { // if reflected back to the clicked raycube
 												raycubes[raycubeHit][index]->getMaterial(0).AmbientColor = reflectedCube;
 												break;
 											}
 											raycubes[1][y]->getMaterial(0).AmbientColor = raycolors.back();
 										}
 										if (y < 0) {
-											if (raycubeHit == 2 && index == x) { // if reflected back to the current cube
+											if (raycubeHit == 2 && index == x) { // if reflected back to the clicked raycube
 												raycubes[raycubeHit][index]->getMaterial(0).AmbientColor = reflectedCube;
 												break;
 											}
 											raycubes[2][x]->getMaterial(0).AmbientColor = raycolors.back();
 										}
 										if (y >= gameBoardSize) {
-											if (raycubeHit == 3 && index == x) { // if reflected back to the current cube
+											if (raycubeHit == 3 && index == x) { // if reflected back to the clicked raycube
 												raycubes[raycubeHit][index]->getMaterial(0).AmbientColor = reflectedCube;
 												break;
 											}
@@ -460,7 +464,7 @@ int main() {
 										y -= incrementor;
 										incrementor = 1;
 									}
-									// next step
+									// next step of ray
 									if (horizontal) {
 										x = x + incrementor;
 									}
@@ -471,7 +475,7 @@ int main() {
 							}
 						}
 					} else {
-						// if an inner gameboard cube is selected, set or remove an atom (if atoms are left)
+						// if an inner gameboard cube (or an atom) is selected, set or remove the respective atom (if atoms are left)
 						if (selectedSceneNode->getID() > -1) {
 							scene::ISceneNode * selectedAtomCube = atoms[static_cast<int>(selectedSceneNode->getID()/gameBoardSize)][selectedSceneNode->getID()%gameBoardSize];
 							if (!selectedAtomCube->isVisible() && receiver.mouseState.leftButtonDown && atomsSet < maxAtoms) {
@@ -487,6 +491,8 @@ int main() {
 					//std::cout << "atoms set: " << atomsSet << std::endl;
 				}
 			}
+
+			// show points
 			std::stringstream ss;
 			ss << "Penalty: " << penalty;
 			std::string s = ss.str();
@@ -494,6 +500,7 @@ int main() {
 				font->draw(s.c_str(), core::rect<s32>(screenX/2-35,10,screenX/2+35,50), video::SColor(255,255,255,255));
 			}
 
+			// draw scene and gui
 			smgr->drawAll();
 			guienv->drawAll();
 			driver->endScene();
