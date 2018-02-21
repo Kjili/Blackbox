@@ -252,6 +252,37 @@ int main() {
 		if (device->isWindowActive()) {
 			driver->beginScene(true, true, video::SColor(255,150,150,255));
 
+			// check for reset
+			if (receiver.context.reset) {
+				atomsSet = 0;
+				penalty = 0;
+				std::vector<video::SColor> raycolors(colors);
+				for (int y = 0; y < gameBoardSize; ++y) {
+					for (int x = 0; x < gameBoardSize; ++x) {
+						cubes[y][x]->getMaterial(0).AmbientColor = cubeColor;
+						atoms[y][x]->setVisible(false);
+					}
+				}
+				for (auto & vec : raycubes) {
+					for (auto & cube : vec) {
+						cube->getMaterial(0).AmbientColor = raycubeColor;
+					}
+				}
+				atomPositions.clear();
+				while (atomPositions.size() < maxAtoms) {
+					int newPos = std::rand() % (gameBoardSize*gameBoardSize);
+					if (std::find(atomPositions.begin(), atomPositions.end(), newPos) == atomPositions.end()) {
+						atomPositions.push_back(newPos);
+						cubes[static_cast<int>(newPos/gameBoardSize)][newPos%gameBoardSize]->getMaterial(0).AmbientColor = video::SColor(255,255,255,255);
+						std::cout << "atom at: " << newPos << " x: " << static_cast<int>(newPos/gameBoardSize) << " , y: " << newPos%gameBoardSize << std::endl;
+					}
+				}
+				receiver.context.reset = false;
+				continue;
+			}
+
+			// check eval
+
 			// check for a mouse click
 			core::position2d<s32> position;
 			if (receiver.mouseState.leftButtonDown || receiver.mouseState.rightButtonDown) {
