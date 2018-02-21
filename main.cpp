@@ -204,8 +204,8 @@ int main() {
 		cubes.push_back(std::vector<scene::ISceneNode*>());
 		atoms.push_back(std::vector<scene::ISceneNode*>());
 		for (int x = 0; x < gameBoardSize; ++x) {
-
-			core::vector3df cubePosition = core::vector3df(gameBoardTopLeftOffset + 3*x, 0, gameBoardTopLeftOffset + 3*y);
+			float cubeScale = cube->getBoundingBox().getExtent().X/2;
+			core::vector3df cubePosition = core::vector3df(gameBoardTopLeftOffset + 3*x + cubeScale, 0, gameBoardTopLeftOffset + 3*y + cubeScale + 0.5);
 			cubes[y].push_back(createNode(driver, smgr, cube, cubePosition, cubeColor, y*gameBoardSize+x));
 			atoms[y].push_back(createNode(driver, smgr, atom, cubePosition + core::vector3df(0,-1,0), atomColor, y*gameBoardSize+x));
 			atoms[y][x]->setVisible(false);
