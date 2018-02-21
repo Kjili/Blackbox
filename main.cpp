@@ -261,7 +261,7 @@ int main() {
 			if (receiver.context.reset) {
 				atomsSet = 0;
 				penalty = 0;
-				std::vector<video::SColor> raycolors(colors);
+				raycolors = colors;
 				for (int y = 0; y < gameBoardSize; ++y) {
 					for (int x = 0; x < gameBoardSize; ++x) {
 						cubes[y][x]->getMaterial(0).AmbientColor = cubeColor;
