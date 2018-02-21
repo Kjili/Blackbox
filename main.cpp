@@ -146,9 +146,7 @@ int main() {
 
 	// start up the engine
 	MyEventReceiver receiver;
-	int screenX = 640;
-	int screenY = 480;
-	IrrlichtDevice *device = createDevice(video::EDT_OPENGL, core::dimension2d<u32>(screenX,screenY), 16, false, false, false, &receiver);
+	IrrlichtDevice *device = createDevice(video::EDT_OPENGL, core::dimension2d<u32>(1024,768), 16, false, false, false, &receiver);
 	if (device == 0) {
 		return 1;
 	}
@@ -162,6 +160,8 @@ int main() {
 	gui::IGUIEnvironment* guienv = device->getGUIEnvironment();
 
 	// build and configure gui
+	int screenX = driver->getScreenSize().Width;
+	int screenY = driver->getScreenSize().Height;
 	guienv->addButton(core::rect<s32>(10,10,100,50), 0, GUI_ID_EVALUATE_BUTTON, L"Evaluate", L"Show Results");
 	guienv->addButton(core::rect<s32>(screenX-10-90,10,screenX-10,50), 0, GUI_ID_RESET_BUTTON, L"Reset", L"Reset Game");
 	gui::IGUIFont* font = guienv->getBuiltInFont();
