@@ -99,7 +99,7 @@ scene::ISceneNode* createNode(video::IVideoDriver* driver, scene::ISceneManager*
 	return node;
 }
 
-std::vector<video::SColor> raycolors {
+std::vector<video::SColor> colors {
 	video::SColor(128, 0, 128, 255),
 	video::SColor(128, 0, 0, 255),
 	video::SColor(128, 128, 0, 255),
@@ -246,6 +246,7 @@ int main() {
 	// draw the scene
 	int atomsSet = 0;
 	int penalty = 0;
+	std::vector<video::SColor> raycolors(colors);
 	while(device->run() && driver) {
 		if (device->isWindowActive()) {
 			driver->beginScene(true, true, video::SColor(255,150,150,255));
