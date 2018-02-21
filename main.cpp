@@ -12,7 +12,8 @@ using namespace irr;
 
 enum {
 	GUI_ID_RESET_BUTTON = 0,
-	GUI_ID_EVALUATE_BUTTON
+	GUI_ID_EVALUATE_BUTTON,
+	GUI_ID_HELP_BUTTON
 };
 
 // based on example 19 of irrlicht docs
@@ -29,7 +30,8 @@ public:
 		IrrlichtDevice *device;
 		bool reset;
 		bool eval;
-		SAppContext(): reset(false), eval(false) {}
+		bool help;
+		SAppContext(): reset(false), eval(false), help(false) {}
 	} context;
 
 	// track mouse movements and clicks
@@ -74,6 +76,9 @@ public:
 							break;
 						case GUI_ID_EVALUATE_BUTTON:
 							context.eval = true;
+							break;
+						case GUI_ID_HELP_BUTTON:
+							context.help = !context.help;
 							break;
 						default:
 							break;
@@ -172,7 +177,11 @@ int main() {
 	guienv->getSkin()->setColor(gui::EGUI_DEFAULT_COLOR::EGDC_TOOLTIP, textcolor);
 	guienv->addButton(core::rect<s32>(10,10,200,50), 0, GUI_ID_EVALUATE_BUTTON, L"Evaluate", L"Show Results");
 	guienv->addButton(core::rect<s32>(screenX-10-190,10,screenX-10,50), 0, GUI_ID_RESET_BUTTON, L"Reset", L"Reset Game");
+	guienv->addButton(core::rect<s32>(220,10,260,50), 0, GUI_ID_HELP_BUTTON, L"?");
 	receiver.context.device = device;
+
+	// load example image
+	video::ITexture* example = driver->getTexture("../images/exampleFullhelp.png");
 
 	// add light
 	smgr->setAmbientLight(video::SColorf(1,1,1));
@@ -513,8 +522,12 @@ int main() {
 				font->draw(s.c_str(), core::rect<s32>(screenX/2-90,10,screenX/2+90,50), textcolor);
 			}
 
-			// draw scene and gui
-			smgr->drawAll();
+			// draw scene (or help if called) and gui
+			if (receiver.context.help) {
+				driver->draw2DImage(example, core::position2d<s32>((screenX-790)/2,60));
+			} else {
+				smgr->drawAll();
+			}
 			guienv->drawAll();
 			driver->endScene();
 		}
