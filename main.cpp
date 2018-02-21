@@ -243,8 +243,8 @@ int main() {
 		int newPos = std::rand() % (gameBoardSize*gameBoardSize);
 		if (std::find(atomPositions.begin(), atomPositions.end(), newPos) == atomPositions.end()) {
 			atomPositions.push_back(newPos);
-			cubes[static_cast<int>(newPos/gameBoardSize)][newPos%gameBoardSize]->getMaterial(0).AmbientColor = video::SColor(255,255,255,255);
-			std::cout << "atom at: " << newPos << " x: " << static_cast<int>(newPos/gameBoardSize) << " , y: " << newPos%gameBoardSize << std::endl;
+			//cubes[static_cast<int>(newPos/gameBoardSize)][newPos%gameBoardSize]->getMaterial(0).AmbientColor = video::SColor(255,255,255,255);
+			//std::cout << "atom at: " << newPos << " x: " << static_cast<int>(newPos/gameBoardSize) << " , y: " << newPos%gameBoardSize << std::endl;
 		}
 	}
 
@@ -281,8 +281,8 @@ int main() {
 					int newPos = std::rand() % (gameBoardSize*gameBoardSize);
 					if (std::find(atomPositions.begin(), atomPositions.end(), newPos) == atomPositions.end()) {
 						atomPositions.push_back(newPos);
-						cubes[static_cast<int>(newPos/gameBoardSize)][newPos%gameBoardSize]->getMaterial(0).AmbientColor = video::SColor(255,255,255,255);
-						std::cout << "atom at: " << newPos << " x: " << static_cast<int>(newPos/gameBoardSize) << " , y: " << newPos%gameBoardSize << std::endl;
+						//cubes[static_cast<int>(newPos/gameBoardSize)][newPos%gameBoardSize]->getMaterial(0).AmbientColor = video::SColor(255,255,255,255);
+						//std::cout << "atom at: " << newPos << " x: " << static_cast<int>(newPos/gameBoardSize) << " , y: " << newPos%gameBoardSize << std::endl;
 					}
 				}
 				receiver.context.reset = false;
@@ -331,7 +331,7 @@ int main() {
 						++penalty;
 						// init variables dependent on the raycube clicked
 						if (receiver.mouseState.leftButtonDown) {
-							std::cout << "array containing clicked raycube: " << raycubeHit << " index: " << index << std::endl;
+							//std::cout << "array containing clicked raycube: " << raycubeHit << " index: " << index << std::endl;
 							bool horizontal;
 							int incrementor;
 							int x = 0;
@@ -368,14 +368,14 @@ int main() {
 							&& std::find(atomPositions.begin(), atomPositions.end(), cubes[x+1][y]->getID()) != atomPositions.end())
 							|| (!horizontal && x > 0
 							&& std::find(atomPositions.begin(), atomPositions.end(), cubes[x-1][y]->getID()) != atomPositions.end())) {
-								std::cout << "atom next to ray step 0" << std::endl;
+								//std::cout << "atom next to ray step 0" << std::endl;
 								raycubes[raycubeHit][index]->getMaterial(0).AmbientColor = reflectedCube;
 							} else {
 								// shoot ray
 								while (true) {
 									// if raycube reached: color raycube
 									if (x >= gameBoardSize || x < 0 || y >= gameBoardSize || y < 0) {
-										std::cout << "border reached at x: " << x << " y: " << y << " index: " << index << " raycubeHit: " << raycubeHit << std::endl;
+										//std::cout << "border reached at x: " << x << " y: " << y << " index: " << index << " raycubeHit: " << raycubeHit << std::endl;
 										raycubes[raycubeHit][index]->getMaterial(0).AmbientColor = raycolors.back();
 										if (x < 0) {
 											if (raycubeHit == 0 && index == y) { // if reflected back to the clicked raycube
@@ -410,7 +410,7 @@ int main() {
 									}
 									// if atom in straight path: color current (hit)
 									if (std::find(atomPositions.begin(), atomPositions.end(), cubes[x][y]->getID()) != atomPositions.end()) {
-										std::cout << "atom hit" << std::endl;
+										//std::cout << "atom hit" << std::endl;
 										raycubes[raycubeHit][index]->getMaterial(0).AmbientColor = raycolors.back();
 										raycolors.pop_back();
 										break;
@@ -420,7 +420,7 @@ int main() {
 									&& std::find(atomPositions.begin(), atomPositions.end(), cubes[x][y+1]->getID()) != atomPositions.end()) {
 										if (horizontal && y > 0
 										&& std::find(atomPositions.begin(), atomPositions.end(), cubes[x][y-1]->getID()) != atomPositions.end()) {
-											std::cout << "double deflection on horizontal path" << std::endl;
+											//std::cout << "double deflection on horizontal path" << std::endl;
 											x -= incrementor;
 											incrementor *= -1;
 											continue;
@@ -433,12 +433,12 @@ int main() {
 									&& std::find(atomPositions.begin(), atomPositions.end(), cubes[x][y-1]->getID()) != atomPositions.end()) {
 										if (horizontal && y < gameBoardSize-1
 										&& std::find(atomPositions.begin(), atomPositions.end(), cubes[x][y+1]->getID()) != atomPositions.end()) {
-											std::cout << "double deflection on horizontal path" << std::endl;
+											//std::cout << "double deflection on horizontal path" << std::endl;
 											x -= incrementor;
 											incrementor *= -1;
 											continue;
 										}
-										std::cout << "deflected on horizontal path" << std::endl;
+										//std::cout << "deflected on horizontal path" << std::endl;
 										horizontal = !horizontal;
 										x -= incrementor;
 										incrementor = 1;
@@ -447,7 +447,7 @@ int main() {
 									&& std::find(atomPositions.begin(), atomPositions.end(), cubes[x+1][y]->getID()) != atomPositions.end()) {
 										if (!horizontal && x > 0
 										&& std::find(atomPositions.begin(), atomPositions.end(), cubes[x-1][y]->getID()) != atomPositions.end()) {
-											std::cout << "double deflection on vertical path" << std::endl;
+											//std::cout << "double deflection on vertical path" << std::endl;
 											y -= incrementor;
 											incrementor *= -1;
 											continue;
@@ -460,12 +460,12 @@ int main() {
 									&& std::find(atomPositions.begin(), atomPositions.end(), cubes[x-1][y]->getID()) != atomPositions.end()) {
 										if (!horizontal && x < gameBoardSize-1
 										&& std::find(atomPositions.begin(), atomPositions.end(), cubes[x+1][y]->getID()) != atomPositions.end()) {
-											std::cout << "double deflection on vertical path" << std::endl;
+											//std::cout << "double deflection on vertical path" << std::endl;
 											y -= incrementor;
 											incrementor *= -1;
 											continue;
 										}
-										std::cout << "deflected on vertical path" << std::endl;
+										//std::cout << "deflected on vertical path" << std::endl;
 										horizontal = !horizontal;
 										y -= incrementor;
 										incrementor = 1;
