@@ -93,10 +93,8 @@ scene::ISceneNode* createNode(video::IVideoDriver* driver, scene::ISceneManager*
 		node->setMaterialFlag(video::EMF_LIGHTING, true);
 		node->setMaterialFlag(video::EMF_BILINEAR_FILTER, false);
 		//node->setMaterialTexture(0, driver->getTexture("../models/cube.png"));
+		node->getMaterial(0).Shininess = 20.0f;
 		node->getMaterial(0).AmbientColor = color;
-		//node->getMaterial(0).DiffuseColor = color; // only with lightnode
-		//node->getMaterial(0).SpecularColor = color; // only with lightnode
-		node->getMaterial(0).EmissiveColor = color;
 		// correct Blender rotation for Irrlicht (not really necessary for a cube, just for reference)
 		node->setRotation(core::vector3df(0,0,180));
 		node->setPosition(pos);
@@ -171,7 +169,6 @@ int main() {
 
 	// add light
 	smgr->setAmbientLight(video::SColorf(1,1,1));
-	//scene::ILightSceneNode* light1 = smgr->addLightSceneNode(0, core::vector3df(0,-100,0), video::SColorf(0.3,0.3,0.3), 1.0f);
 
 	// load the cube
 	scene::IMesh* cube = smgr->getMesh("../models/cube.obj");
