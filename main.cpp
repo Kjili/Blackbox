@@ -270,6 +270,7 @@ int main() {
 	int atomsSet = 0;
 	int penalty = 0;
 	std::vector<video::SColor> raycolors(colors);
+	bool feedback = false;
 
 	// run
 	while(device->run() && driver) {
@@ -301,6 +302,7 @@ int main() {
 						//std::cout << "atom at: " << newPos << " x: " << static_cast<int>(newPos/gameBoardSize) << " , y: " << newPos%gameBoardSize << std::endl;
 					}
 				}
+				feedback = false;
 				receiver.context.reset = false;
 				continue;
 			}
@@ -315,6 +317,7 @@ int main() {
 						cubes[static_cast<int>(pos/gameBoardSize)][pos%gameBoardSize]->getMaterial(0).AmbientColor = video::SColor(255,0,255,0);
 					}
 				}
+				feedback = true;
 				receiver.context.eval = false;
 			}
 
@@ -520,6 +523,23 @@ int main() {
 			std::string s = ss.str();
 			if (font) {
 				font->draw(s.c_str(), core::rect<s32>(screenX/2-90,10,screenX/2+90,50), textcolor);
+				if (feedback) {
+					std::string fb;
+					if (penalty == gameBoardSize) {
+						fb = "Perfect!";
+					} else if (penalty == gameBoardSize) {
+						fb = "Awesome!";
+					} else if (penalty < gameBoardSize*2) {
+						fb = "Well done!";
+					} else if (penalty > gameBoardSize*4) {
+						fb = "Better luck next time!";
+					} else if (penalty > gameBoardSize*3) {
+						fb = "Getting there!";
+					} else {
+						fb = "Nice!";
+					}
+					font->draw(fb.c_str(), core::rect<s32>(10,60,200,60), textcolor);
+				}
 			}
 
 			// draw scene (or help if called) and gui
