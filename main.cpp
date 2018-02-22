@@ -13,7 +13,9 @@ using namespace irr;
 enum {
 	GUI_ID_RESET_BUTTON = 0,
 	GUI_ID_EVALUATE_BUTTON,
-	GUI_ID_HELP_BUTTON
+	GUI_ID_HELP_BUTTON,
+	GUI_ID_MINUS_BUTTON,
+	GUI_ID_PLUS_BUTTON
 };
 
 // based on example 19 of irrlicht docs
@@ -31,7 +33,9 @@ public:
 		bool reset;
 		bool eval;
 		bool help;
-		SAppContext(): reset(false), eval(false), help(false) {}
+		bool decreaseAtoms;
+		bool increaseAtoms;
+		SAppContext(): reset(false), eval(false), help(false), decreaseAtoms(false), increaseAtoms(false) {}
 	} context;
 
 	// track mouse movements and clicks
@@ -79,6 +83,12 @@ public:
 							break;
 						case GUI_ID_HELP_BUTTON:
 							context.help = !context.help;
+							break;
+						case GUI_ID_MINUS_BUTTON:
+							context.decreaseAtoms = true;
+							break;
+						case GUI_ID_PLUS_BUTTON:
+							context.increaseAtoms = true;
 							break;
 						default:
 							break;
@@ -178,6 +188,8 @@ int main() {
 	guienv->addButton(core::rect<s32>(10,10,200,50), 0, GUI_ID_EVALUATE_BUTTON, L"Evaluate", L"Show Results");
 	guienv->addButton(core::rect<s32>(screenX-10-190,10,screenX-10,50), 0, GUI_ID_RESET_BUTTON, L"Reset", L"Reset Game");
 	guienv->addButton(core::rect<s32>(220,10,260,50), 0, GUI_ID_HELP_BUTTON, L"?");
+	guienv->addButton(core::rect<s32>(screenX-10-190-50,10,screenX-10-190-10,50), 0, GUI_ID_MINUS_BUTTON, L"-", L"Reduce the Number of Atoms (After Next Reset)");
+	guienv->addButton(core::rect<s32>(screenX-10-190-50-40,10,screenX-10-190-50,50), 0, GUI_ID_PLUS_BUTTON, L"+", L"Increase the Number of Atoms (After Next Reset)");
 	receiver.context.device = device;
 
 	// load example image
@@ -207,7 +219,8 @@ int main() {
 	const video::SColor raycubeColor = video::SColor(255,0,0,0);//video::SColor(255,0,128,0);//255,0,156,5);
 	const video::SColor atomColor = video::SColor(255,255,255,0);
 	const video::SColor reflectedCube = video::SColor(255,255,255,255);
-	const int maxAtoms = 5;
+	// init atom number
+	int maxAtoms = 5;
 
 	// add cubes to the scene to form the gameboard
 	std::vector<std::vector<scene::ISceneNode*>> cubes;
@@ -266,22 +279,41 @@ int main() {
 
 	// shuffle colors
 	std::shuffle(colors.begin(), colors.end(), std::default_random_engine{});
+
 	// init remaining required variables
 	int atomsSet = 0;
 	int penalty = 0;
 	std::vector<video::SColor> raycolors(colors);
-	bool feedback = false;
+	bool feedback, atomsChanged = false;
+	int nextMaxAtoms = maxAtoms;
 
 	// run
 	while(device->run() && driver) {
 		if (device->isWindowActive()) {
 			driver->beginScene(true, true, video::SColor(255,150,150,255));
 
+			// check for more or less atoms wanted
+			if (receiver.context.decreaseAtoms) {
+				if (nextMaxAtoms > 3) {
+					--nextMaxAtoms;
+					atomsChanged = true;
+					receiver.context.decreaseAtoms = false;
+				}
+			}
+			if (receiver.context.increaseAtoms) {
+				if (nextMaxAtoms < gameBoardSize*2) {
+					++nextMaxAtoms;
+					atomsChanged = true;
+					receiver.context.increaseAtoms = false;
+				}
+			}
+
 			// check for reset
 			if (receiver.context.reset) {
 				atomsSet = 0;
 				penalty = 0;
 				raycolors = colors;
+				maxAtoms = nextMaxAtoms;
 				for (int y = 0; y < gameBoardSize; ++y) {
 					for (int x = 0; x < gameBoardSize; ++x) {
 						cubes[y][x]->getMaterial(0).AmbientColor = cubeColor;
@@ -302,6 +334,7 @@ int main() {
 						//std::cout << "atom at: " << newPos << " x: " << static_cast<int>(newPos/gameBoardSize) << " , y: " << newPos%gameBoardSize << std::endl;
 					}
 				}
+				atomsChanged = false;
 				feedback = false;
 				receiver.context.reset = false;
 				continue;
@@ -518,10 +551,10 @@ int main() {
 			}
 
 			// show points
-			std::stringstream ss;
-			ss << "Penalty: " << penalty;
-			std::string s = ss.str();
 			if (font) {
+				std::stringstream ss;
+				ss << "Penalty: " << penalty;
+				std::string s = ss.str();
 				font->draw(s.c_str(), core::rect<s32>(screenX/2-90,10,screenX/2+90,50), textcolor);
 				if (feedback) {
 					std::string fb;
@@ -539,6 +572,12 @@ int main() {
 						fb = "Nice!";
 					}
 					font->draw(fb.c_str(), core::rect<s32>(10,60,200,60), textcolor);
+				}
+				if (atomsChanged) {
+					std::stringstream ss;
+					ss << "Atoms: " << nextMaxAtoms;
+					std::string s = ss.str();
+					font->draw(s.c_str(), core::rect<s32>(screenX-200,60,screenX-10,60), textcolor);
 				}
 			}
 
