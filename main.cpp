@@ -118,6 +118,14 @@ scene::ISceneNode* createNode(video::IVideoDriver* driver, scene::ISceneManager*
 	return node;
 }
 
+void buildGUI(gui::IGUIEnvironment* guienv, int screenX) {
+	guienv->addButton(core::rect<s32>(10,10,200,50), 0, GUI_ID_EVALUATE_BUTTON, L"Evaluate", L"Show Results");
+	guienv->addButton(core::rect<s32>(screenX-10-190,10,screenX-10,50), 0, GUI_ID_RESET_BUTTON, L"Reset", L"Reset Game");
+	guienv->addButton(core::rect<s32>(220,10,260,50), 0, GUI_ID_HELP_BUTTON, L"?");
+	guienv->addButton(core::rect<s32>(screenX-10-190-50,10,screenX-10-190-10,50), 0, GUI_ID_MINUS_BUTTON, L"-", L"Reduce the Number of Atoms (After Next Reset)");
+	guienv->addButton(core::rect<s32>(screenX-10-190-50-40,10,screenX-10-190-50,50), 0, GUI_ID_PLUS_BUTTON, L"+", L"Increase the Number of Atoms (After Next Reset)");
+}
+
 std::vector<video::SColor> colors {
 	video::SColor(255, 128, 0, 128),
 	video::SColor(255, 128, 0, 0),
@@ -185,11 +193,7 @@ int main() {
 	guienv->getSkin()->setFont(font);
 	guienv->getSkin()->setColor(gui::EGUI_DEFAULT_COLOR::EGDC_BUTTON_TEXT, textcolor);
 	guienv->getSkin()->setColor(gui::EGUI_DEFAULT_COLOR::EGDC_TOOLTIP, textcolor);
-	guienv->addButton(core::rect<s32>(10,10,200,50), 0, GUI_ID_EVALUATE_BUTTON, L"Evaluate", L"Show Results");
-	guienv->addButton(core::rect<s32>(screenX-10-190,10,screenX-10,50), 0, GUI_ID_RESET_BUTTON, L"Reset", L"Reset Game");
-	guienv->addButton(core::rect<s32>(220,10,260,50), 0, GUI_ID_HELP_BUTTON, L"?");
-	guienv->addButton(core::rect<s32>(screenX-10-190-50,10,screenX-10-190-10,50), 0, GUI_ID_MINUS_BUTTON, L"-", L"Reduce the Number of Atoms (After Next Reset)");
-	guienv->addButton(core::rect<s32>(screenX-10-190-50-40,10,screenX-10-190-50,50), 0, GUI_ID_PLUS_BUTTON, L"+", L"Increase the Number of Atoms (After Next Reset)");
+	buildGUI(guienv, screenX);
 	receiver.context.device = device;
 
 	// load example image
@@ -291,6 +295,13 @@ int main() {
 	while(device->run() && driver) {
 		if (device->isWindowActive()) {
 			driver->beginScene(true, true, video::SColor(255,150,150,255));
+
+			// check for resized window
+			if (driver->getScreenSize().Width != screenX) {
+				screenX = driver->getScreenSize().Width;
+				guienv->clear();
+				buildGUI(guienv, screenX);
+			}
 
 			// check for more or less atoms wanted
 			if (receiver.context.decreaseAtoms) {
