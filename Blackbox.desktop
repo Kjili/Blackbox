@@ -1,0 +1,11 @@
+[Desktop Entry]
+
+Type=Application
+Name=Blackbox
+Comment=Run Blackbox
+# if the game is in .local/share/applications/Blackbox
+Exec=sh -c "cd \$HOME/.local/share/applications/Blackbox/build && ./blackbox"
+# if the icon.png is copied to ~/.icons or /usr/share/icons/
+Icon=icon
+Terminal=true
+Categories=Game
