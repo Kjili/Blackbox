@@ -126,41 +126,42 @@ void buildGUI(gui::IGUIEnvironment* guienv, int screenX) {
 	guienv->addButton(core::rect<s32>(screenX-10-190-50-40,10,screenX-10-190-50,50), 0, GUI_ID_PLUS_BUTTON, L"+", L"Increase the Number of Atoms (After Next Reset)");
 }
 
+// based on https://en.wikipedia.org/wiki/Web_colors
 std::vector<video::SColor> colors {
-	video::SColor(255, 128, 0, 128),
-	video::SColor(255, 128, 0, 0),
-	video::SColor(255, 128, 128, 0),
-	video::SColor(255, 0, 128, 128),
-	video::SColor(255, 250, 128, 114),
-	video::SColor(255, 220, 20, 60),
-	video::SColor(255, 139, 0, 0),
-	video::SColor(255, 255, 69, 0),
-	video::SColor(255, 255, 140, 0),
-	video::SColor(255, 255, 215, 0),
-	video::SColor(255, 222, 184, 135),
-	video::SColor(255, 188, 143, 143),
-	video::SColor(255, 218, 165, 32),
-	video::SColor(255, 205, 133, 63),
-	video::SColor(255, 210, 105, 30),
-	video::SColor(255, 139, 69, 19),
-	video::SColor(255, 85, 107, 47),
-	video::SColor(255, 154, 205, 50),
-	video::SColor(255, 50, 205, 50),
-	video::SColor(255, 124, 252, 0),
-	video::SColor(255, 0, 255, 127),
-	video::SColor(255, 152, 251, 152),
-	video::SColor(255, 102, 205, 170),
-	video::SColor(255, 127, 255, 212),
-	video::SColor(255, 0, 206, 209),
-	video::SColor(255, 135, 206, 235),
-	video::SColor(255, 0, 191, 255),
-	video::SColor(255, 100, 149, 237),
-	video::SColor(255, 238, 130, 238),
-	video::SColor(255, 138, 43, 226),
-	video::SColor(255, 75, 0, 130),
-	video::SColor(255, 255, 192, 203),
-	video::SColor(255, 255, 20, 147),
-	video::SColor(255, 199, 21, 133)
+	video::SColor(255, 128, 0, 128),	// Purple
+	video::SColor(255, 128, 0, 0),		// Maroon
+	video::SColor(255, 128, 128, 0),	// Olive
+	video::SColor(255, 0, 128, 128),	// Teal
+	video::SColor(255, 250, 128, 114),	// Salmon
+	video::SColor(255, 220, 20, 60),	// Crimson
+	video::SColor(255, 139, 0, 0),		// DarkRed
+	video::SColor(255, 255, 69, 0),		// OrangeRed
+	video::SColor(255, 255, 165, 0),	// Orange
+	video::SColor(255, 255, 215, 0),	// Gold
+	video::SColor(255, 0, 0, 255),		// Blue
+	video::SColor(255, 188, 143, 143),	// RosyBrown
+	video::SColor(255, 189, 183, 107),	// DarkKhaki
+	video::SColor(255, 0, 100, 0),		// DarkGreen
+	video::SColor(255, 210, 105, 30),	// Chocolate
+	video::SColor(255, 139, 69, 19),	// SaddleBrown
+	video::SColor(255, 85, 107, 47),	// DarkOliveGreen
+	video::SColor(255, 173, 255, 47),	// GreenYellow
+	video::SColor(255, 50, 205, 50),	// LimeGreen
+	video::SColor(255, 124, 252, 0),	// LawnGreen
+	video::SColor(255, 0, 255, 127),	// SpringGreen
+	video::SColor(255, 47, 79, 79),		// DarkSlateGray
+	video::SColor(255, 102, 205, 170),	// MediumAquamarine
+	video::SColor(255, 127, 255, 212),	// Aquamarine
+	video::SColor(255, 0, 206, 209),	// DarkTurquoise
+	video::SColor(255, 176, 224, 230),	// PowderBlue
+	video::SColor(255, 0, 191, 255),	// DeepSkyBlue
+	video::SColor(255, 100, 149, 237),	// CornflowerBlue
+	video::SColor(255, 238, 130, 238),	// Violet
+	video::SColor(255, 138, 43, 226),	// BlueViolet
+	video::SColor(255, 75, 0, 130),		// Indigo
+	video::SColor(255, 255, 192, 203),	// Pink
+	video::SColor(255, 255, 20, 147),	// DeepPink
+	video::SColor(255, 199, 21, 133)	// MediumVioletRed
 };
 
 int main() {
